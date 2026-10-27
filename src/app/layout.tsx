@@ -24,6 +24,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <Link href="/producto">Cómo funciona</Link>
             <Link href="/nosotros">Por qué existe</Link>
             <Link href="/acuerdo/nuevo">Soy empleador</Link>
+            <Link href="/privacidad">Privacidad</Link>
           </nav>
           <p className="mt-3">Peldaño · peldano.xyz · Sin calificaciones. Tus constancias son tuyas.</p>
         </footer>

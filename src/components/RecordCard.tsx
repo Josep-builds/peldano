@@ -59,7 +59,7 @@ export function RecordCard({ r, showWorker = false }: { r: RecordView; showWorke
             <p className="mt-4 inline-flex items-center gap-2 rounded-full bg-mint px-3.5 py-1.5 text-sm font-semibold text-pine">
               {Icons.lock} Firmada por {r.observer_name} · bloqueada
             </p>
-            <p className="mt-2 text-xs text-muted">Firmada el {fmtDateTime(r.signed_at)}. No se puede cambiar ni borrar.</p>
+            <p className="mt-2 text-xs text-muted">Firmada el {fmtDateTime(r.signed_at)} · No se puede cambiar ni borrar.</p>
           </div>
         </>
       ) : (

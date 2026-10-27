@@ -65,3 +65,5 @@ Every session ends here: what was decided, why, and tomorrow's first move.
 | 6 | Privacy page | Added `/privacidad` (data stored, purpose, no third-party sharing, hide-not-delete, contact) + footer link. Local `node_modules` was stale (had Next 16.3.8 + missing `@fontsource-variable/figtree` instead of the pinned `^15.5.28`) — reinstalled clean before verifying the build. |
 
 **Open for next session:** confirm `peldano.xyz` DNS has propagated to Vercel's nameservers (`ns1`/`ns2.vercel-dns.com`) and run T2 + T11 live with two Google accounts.
+
+**Bug found (mechanical pass, live login test) → fixed:** Supabase's `site_url` is `https://peldano.xyz` (the home page), not `/auth/callback`. A Google sign-in therefore landed the OAuth `code` on `/` with nobody to exchange it, so the session was never created. Fixed in `src/middleware.ts`: when the path is `/` and a `code` param is present, redirect to `/auth/callback?code=...&next=/app` before `updateSession` runs. Commit `fix: handle OAuth code landing on home`, pushed, redeployed to production.

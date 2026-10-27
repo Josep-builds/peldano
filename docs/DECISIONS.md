@@ -44,3 +44,24 @@ Every session ends here: what was decided, why, and tomorrow's first move.
 **Bug found → fixed:** the signed timestamp rendered "08:15 p.m.." (double period: es-MX time format ends in "p.m." and the sentence added another). Fixed by using a separator `·`. → commit `fix:`, redeploy.
 
 **Tomorrow's first move:** create the Supabase project, run `0001_init.sql`, turn on Google sign-in, deploy to Vercel, point peldano.xyz, and run T2 + T11 with two Google accounts (worker on phone, observer on laptop). Then run the persona test (Iván, Rosa).
+
+---
+
+## Session 2 · 27 Oct 2026 — Publish: GitHub, Supabase, Vercel, domain
+
+**D15 — Found and relocated stray W9 (`pelda-o`) leftovers.** The working directory had untracked, root-level `app/`, `components/`, `lib/`, `public/*.svg`, `scripts/`, `proxy.ts`, `eslint.config.mjs`, and `docs/IMPLEMENTATION_PROMPT.md` — the old AI-extraction/Ed25519-attestation build (D1's "not this one"). They were never committed, but Next.js was silently building from the root `app/` instead of the real `src/app/`, and that tree is incomplete (missing `lib/attestations/*`, `lib/supabase/admin.ts`), which broke the first `vercel --prod` build. Moved everything out of `~/peldano` to a scratch backup (not deleted) before redeploying. **Why:** a local-upload Vercel deploy would otherwise have shipped the wrong app entirely. **Also found:** two extra migration files on disk, `0002_evidence_bucket_limits.sql` and `0003_fix_observer_fk_on_delete.sql`, from the same old project (reference a `entries` table and an `evidence` bucket that don't exist in this schema) — relocated alongside, not pushed to the DB.
+
+**D16 — Supabase CLI `link` doesn't work with the browser-login session token.** `supabase link --project-ref ...` failed with `LinkAuthTokenError` / insufficient privileges, even though the same token could list projects and read API keys. Worked around by pushing migrations with `supabase db push --project-ref ... ` + `SUPABASE_DB_PASSWORD` env var (direct Postgres connection), skipping `link` entirely. **Why:** avoids depending on a Management-API scope the CLI session didn't have; no project settings were touched to work around it.
+
+**Done**
+
+| # | Step | Result |
+|---|---|---|
+| 1 | GitHub | Pushed full history (9 commits) to `Josep-builds/peldano` (public). |
+| 2 | Supabase | Linked to `okiebjcsugsroshxmovf` (peldano-venture) via direct DB connection; pushed `0001_init.sql` only. Verified `records`/`acuerdos`/`shares` + all RPCs exist via anonymous REST calls (permission-denied on tables/`create_record`, 200 on public `get_acuerdo`/`get_share`) rather than the service-role key, which was never used or stored. |
+| 3 | Vercel | Project `peldano` created, linked to the GitHub repo. Env vars set for Production + Preview: `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` (new-style `sb_publishable_...` key), `NEXT_PUBLIC_SITE_URL=https://peldano.xyz`. Deployed to production twice (initial build + after D17 below). |
+| 4 | Domain | `peldano.xyz` + `www.peldano.xyz` added to the Vercel project (domain bought by Josep directly through Vercel's own registrar beforehand — confirmed before touching anything, no new purchase triggered). DNS/nameservers not yet propagated as of session end. |
+| 5 | Auth | Josep configured `site_url`, redirect URLs, and the Google OAuth provider (Client ID/Secret) directly in the Supabase dashboard — no Management API call made, no token needed. |
+| 6 | Privacy page | Added `/privacidad` (data stored, purpose, no third-party sharing, hide-not-delete, contact) + footer link. Local `node_modules` was stale (had Next 16.3.8 + missing `@fontsource-variable/figtree` instead of the pinned `^15.5.28`) — reinstalled clean before verifying the build. |
+
+**Open for next session:** confirm `peldano.xyz` DNS has propagated to Vercel's nameservers (`ns1`/`ns2.vercel-dns.com`) and run T2 + T11 live with two Google accounts.

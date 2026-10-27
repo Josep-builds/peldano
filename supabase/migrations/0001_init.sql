@@ -315,6 +315,19 @@ begin
   if not found then raise exception 'not allowed' using errcode = '42501'; end if;
 end $$;
 
+-- Worker lists own shares with the acuerdo's public face (workers can't read the acuerdos table directly)
+create or replace function public.list_my_shares()
+returns table (id uuid, created_at timestamptz, revoked_at timestamptz, business_name text, n_days smallint, n_records int)
+language sql security definer stable
+set search_path = ''
+as $$
+  select s.id, s.created_at, s.revoked_at, a.business_name, a.n_days, cardinality(s.record_ids)
+    from public.shares s
+    join public.acuerdos a on a.id = s.acuerdo_id
+   where s.worker_id = auth.uid()
+   order by s.created_at desc
+$$;
+
 -- Employer opens a share link. Hidden records disappear immediately; revoked links show nothing.
 create or replace function public.get_share(p_token text)
 returns jsonb
@@ -355,5 +368,6 @@ grant execute on function public.set_record_hidden(uuid, boolean)               
 grant execute on function public.create_acuerdo(text, text, int)                  to authenticated;
 grant execute on function public.create_share(text, uuid[])                       to authenticated;
 grant execute on function public.revoke_share(uuid)                               to authenticated;
+grant execute on function public.list_my_shares()                                 to authenticated;
 grant execute on function public.get_acuerdo(text)                                to anon, authenticated;
 grant execute on function public.get_share(text)                                  to anon, authenticated;

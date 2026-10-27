@@ -100,6 +100,10 @@ end $$;
 insert into t select 'share', public.create_share(lower((select v from t where k='code')),
   array[(select v from t where k='signed')::uuid, (select v from t where k='signed2')::uuid]);
 
+do $$ begin if (select count(*) from public.list_my_shares()) <> 1 then raise exception 'list_my_shares FAIL'; end if; end $$;
+select set_config('request.jwt.claim.sub','00000000-0000-0000-0000-00000000000d', false);
+do $$ begin if (select count(*) from public.list_my_shares()) <> 0 then raise exception 'list_my_shares leak FAIL'; end if; end $$;
+
 -- T9: employer (anon) sees 2 de 3
 reset role; set role anon;
 do $$ declare j jsonb := public.get_share((select v from t where k='share')); begin
